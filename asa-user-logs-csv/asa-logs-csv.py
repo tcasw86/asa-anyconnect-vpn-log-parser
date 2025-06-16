@@ -7,6 +7,13 @@ log_folder = "./logs"
 output_folder = "./output"
 output_csv = os.path.join(output_folder, "asa_log_report.csv")
 
+# Ensure the logs folder exists, or create it and alert the user
+if not os.path.isdir(log_folder):
+    os.makedirs(log_folder)
+    print(f"🆕 Created missing logs folder at '{log_folder}'.")
+    print("📂 Please add .txt log files into the 'logs' folder and re-run the script.")
+    exit(1)  # Stop the script so user can add files
+
 # Ensure output directory exists
 os.makedirs(output_folder, exist_ok=True)
 
