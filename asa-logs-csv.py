@@ -3,8 +3,8 @@ import re
 import csv
 from collections import defaultdict
 
-log_folder = "./logs"
-output_folder = "./output"
+log_folder = "../logs"
+output_folder = "../output"
 output_csv = os.path.join(output_folder, "asa_log_report.csv")
 
 # Ensure the logs folder exists, or create it and alert the user
@@ -19,26 +19,22 @@ os.makedirs(output_folder, exist_ok=True)
 
 # Mapping ASA attributes to human-readable column headers
 FIELD_MAP = {
-    "aaa.cisco.username": "User Name",
-    "Addr": "IP Address",
-    "aaa.cisco.grouppolicy": "Group Policy",
     "timestamp": "Timestamp",
-    "aaa.cisco.tunnelgroup": "Tunnel Group",
-    "endpoint.anyconnect.platform": "Platform",
-    "endpoint.anyconnect.macaddress[0]": "MAC Address",
-    "endpoint.anyconnect.useragent": "AnyConnect Version",
-    "endpoint.anyconnect.devicecomputername": "Device Name",
-    "endpoint.anyconnect.deviceuniqueid": "Device ID",
+    "User Name": "User Name",
+    "IP Address": "IP Address",
+    "aaa.cisco.grouppolicy": "Group Policy",
     "endpoint.anyconnect.devicetype": "Device Type",
+    "endpoint.anyconnect.publicmacaddress": "MAC Address",
+    "endpoint.anyconnect.devicecomputername": "Device Name",
 }
 
 # Regex to parse log lines
 log_pattern = re.compile(
-    r'^(?P<timestamp>\d{2}:\d{2}):\d{2} .*?DAP: User (?P<user>[^,]+), Addr (?P<ip>[^:]+): '
+    r'^(?P<month>\w{3})\s+(?P<day>\d{1,2})\s+(?P<time>\d{2}:\d{2}):\d{2} .*?DAP: User (?P<user>[^,]+), Addr (?P<ip>[^:]+): '
     r'Session Attribute (?P<attribute>[^\s=]+) = ?(?P<value>.*)$'
 )
 
-# Grouped by (user, ip, hh:mm)
+# Grouped by (user, ip, timestamp string)
 sessions = defaultdict(dict)
 
 # Process all log files
@@ -49,16 +45,17 @@ for filename in os.listdir(log_folder):
                 match = log_pattern.match(line.strip())
                 if match:
                     data = match.groupdict()
-                    session_key = (data["user"], data["ip"], data["timestamp"])
+                    timestamp = f"{data['month']} {data['day']} {data['time']}"
+                    session_key = (data["user"], data["ip"], timestamp)
                     session = sessions[session_key]
 
                     session["User Name"] = data["user"]
                     session["IP Address"] = data["ip"]
-                    session["Timestamp"] = data["timestamp"]
+                    session["Timestamp"] = timestamp
 
                     attr = data["attribute"]
                     if attr in FIELD_MAP:
-                        session[FIELD_MAP[attr]] = data["value"]
+                        session[FIELD_MAP[attr]] = data["value"].strip('"')
 
 # Write output CSV
 with open(output_csv, "w", newline='', encoding='utf-8') as csvfile:

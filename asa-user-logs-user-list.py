@@ -2,8 +2,8 @@ import os
 import re
 
 # Folder containing the log files
-log_folder = "./logs"  # Adjust as needed
-output_folder = "./output"
+log_folder = "../logs"  # Adjust as needed
+output_folder = "../output"
 os.makedirs(output_folder, exist_ok=True)
 
 # Ensure the logs folder exists, or create it and alert the user
