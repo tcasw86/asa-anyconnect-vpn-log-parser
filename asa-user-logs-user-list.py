@@ -38,3 +38,4 @@ with open(os.path.join(output_folder, "users.txt"), "w", encoding='utf-8') as ou
         output_file.write(username + "\n")
 
 print(f"✅ Extracted {len(usernames)} unique usernames to users.txt.")
+
